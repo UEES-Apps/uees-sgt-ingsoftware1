@@ -1,0 +1,48 @@
+@startuml
+skinparam backgroundColor white
+skinparam sequenceParticipant {
+  BackgroundColor #FFF7F8
+  BorderColor #7A0019
+  FontColor #2F2F2F
+  FontName Arial
+}
+skinparam sequenceLifeLineBorderColor #7A0019
+skinparam sequenceArrowColor #7A0019
+skinparam sequenceActorBorderColor #7A0019
+skinparam sequenceActorBackgroundColor #F6F6F6
+skinparam ArrowFontColor #2F2F2F
+skinparam ArrowFontName Arial
+skinparam ArrowFontSize 12
+skinparam sequenceGroupBackgroundColor #FFF7F8
+skinparam sequenceGroupBorderColor #7A0019
+
+actor Estudiante
+boundary "PantallaReserva\n<<boundary>>" as UI
+control "ControladorReserva\n<<control>>" as Ctrl
+entity "Reserva\n<<entity>>" as Res
+entity "Disponibilidad\n<<entity>>" as Disp
+entity "Notificacion\n<<entity>>" as Notif
+
+Estudiante -> UI : cancelarReserva(reserva)
+UI -> Ctrl : cancelarReserva(reserva)
+Ctrl -> Res : faltanMenosDe24h()
+
+alt faltan 24 horas o más
+  Res --> Ctrl : false
+  Ctrl -> Res : cancelar()
+  Ctrl -> Disp : liberar()
+  Ctrl -> Notif : enviar()
+  Notif --> Estudiante : notificación de cancelación
+  Ctrl --> UI : reservaCancelada
+  UI --> Estudiante : mostrarConfirmacion("Reserva cancelada")
+else faltan menos de 24 horas
+  Res --> Ctrl : true
+  Ctrl -> Res : registrarInasistencia()
+  Ctrl -> Disp : liberar()
+  Ctrl -> Notif : enviar()
+  Notif --> Estudiante : notificación de inasistencia
+  Ctrl --> UI : registradaComoInasistencia
+  UI --> Estudiante : mostrarConfirmacion("Registrada como inasistencia: antelación insuficiente")
+end
+
+@enduml

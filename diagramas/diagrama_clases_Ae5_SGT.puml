@@ -1,0 +1,93 @@
+@startuml
+skinparam backgroundColor white
+skinparam classAttributeIconSize 0
+skinparam class {
+  BackgroundColor #FFF7F8
+  BorderColor #7A0019
+  ArrowColor #7A0019
+  FontColor #2F2F2F
+  FontName Arial
+  HeaderBackgroundColor #7A0019
+  FontSize 12
+}
+skinparam classFontColor white
+
+class Estudiante {
+  -id: int
+  -nombre: String
+  -correo: String
+  --
+  +reservarTutoria(d: Disponibilidad): Reserva
+  +cancelarReserva(r: Reserva): void
+}
+
+class Docente {
+  -id: int
+  -nombre: String
+  -materia: String
+  --
+  +registrarDisponibilidad(fecha, horaInicio, horaFin): Disponibilidad
+  +consultarAgenda(): List<Disponibilidad>
+}
+
+class Disponibilidad {
+  -fecha: Date
+  -horaInicio: Time
+  -horaFin: Time
+  -estado: String
+  --
+  +estaLibre(): boolean
+  +marcarComoOcupada(): void
+  +liberar(): void
+}
+
+class Reserva {
+  -fechaReserva: Date
+  -estado: String
+  --
+  +confirmar(): void
+  +cancelar(): void
+  +faltanMenosDe24h(): boolean
+  +registrarInasistencia(): void
+}
+
+class Notificacion {
+  -tipo: String
+  -mensaje: String
+  -fechaEnvio: Date
+  --
+  +enviar(): void
+}
+
+class "PantallaReserva\n<<boundary>>" as UI {
+  --
+  +mostrarFranjas(): void
+  +mostrarConfirmacion(): void
+  +mostrarError(): void
+}
+
+class "ControladorReserva\n<<control>>" as Ctrl {
+  --
+  +reservarTutoria(): void
+  +cancelarReserva(): void
+}
+
+Docente "1" *-- "0..*" Disponibilidad : publica >
+Estudiante "1" --- "0..*" Reserva : realiza >
+Disponibilidad "1" -- "0..1" Reserva : ocupa >
+Reserva "1" --- "0..*" Notificacion : genera >
+
+UI ..> Ctrl : <<depend>>
+Ctrl ..> Estudiante : <<depend>>
+Ctrl ..> Disponibilidad : <<depend>>
+Ctrl ..> Reserva : <<depend>>
+Ctrl ..> Notificacion : <<depend>>
+
+note right of Ctrl
+  Nota de diseño (D03): reservarTutoria()
+  es responsabilidad conceptual de
+  Estudiante; ControladorReserva la
+  ejecuta técnicamente (ver sección 5).
+end note
+
+@enduml

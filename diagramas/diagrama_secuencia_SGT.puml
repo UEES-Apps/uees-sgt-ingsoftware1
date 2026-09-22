@@ -1,0 +1,52 @@
+@startuml
+skinparam backgroundColor white
+skinparam sequenceParticipant {
+  BackgroundColor #FFF7F8
+  BorderColor #7A0019
+  FontColor #2F2F2F
+  FontName Arial
+}
+skinparam sequenceLifeLineBorderColor #7A0019
+skinparam sequenceArrowColor #7A0019
+skinparam sequenceActorBorderColor #7A0019
+skinparam sequenceActorBackgroundColor #F6F6F6
+skinparam ArrowFontColor #2F2F2F
+skinparam ArrowFontName Arial
+skinparam ArrowFontSize 12
+skinparam sequenceGroupBackgroundColor #FFF7F8
+skinparam sequenceGroupBorderColor #7A0019
+
+actor Estudiante
+boundary "PantallaReserva\n<<boundary>>" as UI
+control "ControladorReserva\n<<control>>" as Ctrl
+entity "Docente\n<<entity>>" as Doc
+entity "Disponibilidad\n<<entity>>" as Disp
+entity "Reserva\n<<entity>>" as Res
+entity "Notificacion\n<<entity>>" as Notif
+
+Estudiante -> UI : consultarDisponibilidad(docente)
+UI -> Doc : consultarAgenda()
+Doc --> UI : disponibilidadesLibres
+UI --> Estudiante : mostrarFranjas(disponibilidadesLibres)
+
+Estudiante -> UI : seleccionarFranja(disponibilidad)
+UI -> Ctrl : reservarTutoria(estudiante, disponibilidad)
+
+alt disponibilidad sigue libre
+  Ctrl -> Disp : estaLibre()
+  Disp --> Ctrl : true
+  Ctrl -> Res : crear(estudiante, disponibilidad)
+  Ctrl -> Disp : marcarComoOcupada()
+  Ctrl -> Res : confirmar()
+  Ctrl -> Notif : enviar()
+  Notif --> Estudiante : notificación de confirmación
+  Ctrl --> UI : reservaConfirmada
+  UI --> Estudiante : mostrarConfirmacion()
+else disponibilidad ya no está libre
+  Ctrl -> Disp : estaLibre()
+  Disp --> Ctrl : false
+  Ctrl --> UI : franjaNoDisponible
+  UI --> Estudiante : mostrarError("La franja ya no está disponible")
+end
+
+@enduml
